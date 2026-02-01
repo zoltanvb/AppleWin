@@ -151,6 +151,7 @@ namespace common2
         options.configurationFile = getConfigFile("applewin.yaml");
         const std::string configurationFileDefault = options.configurationFile.string();
         const std::string audioBufferDefault = std::to_string(options.audioBuffer);
+        const std::string glSwapIntervalDefault = std::to_string(options.glSwapInterval);
 
         // clang-format off
 
@@ -179,7 +180,7 @@ namespace common2
                  {"d1",                      required_argument,    '1',              "Disk in S6D1 drive"},
                  {"d2",                      required_argument,    '2',              "Disk in S6D2 drive"},
                  {"h1",                      required_argument,    DISK_H1,          "Hard Disk in 1st drive"},
-                 {"h2",                      required_argument,    DISK_H2,          "Hard Disk in 1st drive"},
+                 {"h2",                      required_argument,    DISK_H2,          "Hard Disk in 2nd drive"},
              }},
             {"Snapshot",
              {
@@ -205,7 +206,7 @@ namespace common2
             {"sa2",
              {
                  {"sdl-driver",              required_argument,    SDL_DRIVER,       "SDL driver"},
-                 {"gl-swap",                 required_argument,    GL_SWAP,          "SDL_GL_SwapInterval"},
+                 {"gl-swap",                 required_argument,    GL_SWAP,          "SDL_GL_SwapInterval", glSwapIntervalDefault.c_str()},
                  {"timer",                   no_argument,          TIMER,            "Synchronise with timer"},
                  {"no-imgui",                no_argument,          NO_IMGUI,         "Plain SDL2 renderer"},
                  {"geometry",                required_argument,    GEOMETRY,         "WxH[+X+Y]"},
@@ -250,7 +251,7 @@ namespace common2
             {
                 if (optind < argc)
                 {
-                    std::cerr << "Uexpected positional argument: '" << argv[optind] << "'" << std::endl << std::endl;
+                    std::cerr << "Unexpected positional argument: '" << argv[optind] << "'" << std::endl << std::endl;
                     printHelp(allOptions);
                     return false;
                 }
