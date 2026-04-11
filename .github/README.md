@@ -3,11 +3,13 @@
 This repository hosts the build source for the AppleWin core when it is built on libretro build system. The aim is to keep this in sync with https://github.com/audetto/AppleWin .
 
 Currently produced builds:
-- Linux x86 and x86_64
+- Linux x86, x86_64, arm64
 - Windows 32 and 64-bit
-- OSX
+- OSX x64, arm64
 - Android arm64
 - iOS
+- TvOS
+- WebOS armv7a
 
 The upstream readme file follows below:
 
