@@ -1252,7 +1252,7 @@ bool _CheckBreakpointValueWithPrefix(Breakpoint_t* pBP, int nVal)
 		const UINT saturnActiveBank = GetCardMgr().GetLanguageCardMgr().GetLanguageCard()->GetActiveBank();
 		const int saturnBank = pBP->addrPrefix.nSlot != AddressPrefix_t::kSlotInvalid && pBP->addrPrefix.nBank != AddressPrefix_t::kBankInvalid ? pBP->addrPrefix.nBank : AddressPrefix_t::kBankInvalid;
 
-		if (GetMemMode() & MF_HIGHRAM)
+		if (GetMemMode() & MF_HIGHRAM)	// RAM readable (RAM either writable or protected)
 		{
 			if (bNoRamworksOrSaturnBank
 				|| (saturnBank < 0 && pBP->addrPrefix.nBank == 0x00 && !(GetMemMode() & MF_ALTZP))
@@ -1272,13 +1272,20 @@ bool _CheckBreakpointValueWithPrefix(Breakpoint_t* pBP, int nVal)
 				}
 			}
 		}
-		else // ROM switched in
+		else // ROM readable (RAM either writable or protected)
 		{
-			if (!bNoRamworksOrSaturnBank
-				|| (pBP->addrPrefix.nLangCard != AddressPrefix_t::kLangCardInvalid))
-				bStatus = false;
-			else
+			if (isWrite && GetMemMode() & MF_WRITERAM)	// RAM writable
+			{
 				bStatus = true;
+			}
+			else // RAM protected
+			{
+				if (!bNoRamworksOrSaturnBank
+					|| (pBP->addrPrefix.nLangCard != AddressPrefix_t::kLangCardInvalid))
+					bStatus = false;
+				else
+					bStatus = true;
+			}
 		}
 	}
 	else
@@ -4191,15 +4198,15 @@ static Update_t _CmdMemoryDump (int nArgs, int iWhich, int iView )
 
 	int iArg = 1;	// skip cmd
 	int dArgPrefix = 0;
-	g_aMemDump[iWhich].addrPrefix.Clear();
-	if (!Range_GetAllPrefixes(iArg, nArgs, dArgPrefix, &g_aMemDump[iWhich].addrPrefix, false))
+	AddressPrefix_t addrPrefix;
+	if (!Range_GetAllPrefixes(iArg, nArgs, dArgPrefix, &addrPrefix, false))
 		return Help_Arg_1(g_iCommand);
 
 	WORD nAddress = 0;
 	if (!MemoryDumpCheck(iArg, &nAddress))
 		return Help_Arg_1(g_iCommand);
 
-	if (g_aMemDump[iWhich].addrPrefix.nSlot == AddressPrefix_t::kSlotInvalid &&
+	if (addrPrefix.nSlot == AddressPrefix_t::kSlotInvalid &&
 	   (g_aArgs[iArg].eDevice == DEV_MB_SUBUNIT || g_aArgs[iArg].eDevice == DEV_AY8913_PAIR))
 	{
 		ConsolePrintFormat("Slot prefix required for MB or AY device");
@@ -4210,6 +4217,7 @@ static Update_t _CmdMemoryDump (int nArgs, int iWhich, int iView )
 	g_aMemDump[iWhich].eDevice = g_aArgs[iArg].eDevice;
 	g_aMemDump[iWhich].bActive = true;
 	g_aMemDump[iWhich].eView = (MemoryView_e) iView;
+	g_aMemDump[iWhich].addrPrefix = addrPrefix;
 
 	return UPDATE_MEM_DUMP; // TODO: This really needed? Don't think we do any actual output
 }
